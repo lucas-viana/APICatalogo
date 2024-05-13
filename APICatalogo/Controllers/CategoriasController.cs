@@ -8,18 +8,19 @@ namespace APICatalogo.Controllers
     [ApiController]
     public class CategoriasController : ControllerBase
     {
-        private readonly IRepository<Categoria> _repository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly ILogger<CategoriasController> _logger;
 
-        public CategoriasController(ICategoriaRepository context)
+        public CategoriasController(IUnitOfWork unitOfWork, ILogger<CategoriasController> logger)
         {
-            _repository = context;
+            _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         [HttpGet]
         public ActionResult<IEnumerable<Categoria>> GetCategorias()
         {
-            var lista = _repository.GetAll();
+            var lista = _unitOfWork.CategoriaRepository.GetAll();
             if (lista is null)
             {
                 return NotFound();
@@ -30,7 +31,7 @@ namespace APICatalogo.Controllers
         [HttpGet("{id:int}", Name = "ObterCategoria")]
         public ActionResult<Produto> Get(int id)
         {
-            var categoria = _repository.Get(c => c.CategoriaId == id);
+            var categoria = _unitOfWork.CategoriaRepository.Get(c => c.CategoriaId == id);
             if (categoria is null)
             {
                 _logger.LogWarning($"Categoria com id = {id} não encontrado...");
@@ -47,7 +48,8 @@ namespace APICatalogo.Controllers
                 _logger.LogWarning("Dados inválidos");
                 return BadRequest("Dados inválidos");
             }
-            _repository.Create(categoria);
+            _unitOfWork.CategoriaRepository.Create(categoria);
+            _unitOfWork.Commit();
             return new CreatedAtRouteResult("ObterCategoria", new { id = categoria.CategoriaId }, categoria);
         }
 
@@ -59,7 +61,8 @@ namespace APICatalogo.Controllers
                 _logger.LogWarning("Dados inválidos");
                 return BadRequest("Dados inválidos");
             }
-            _repository.Update(categoria);
+            _unitOfWork.CategoriaRepository.Update(categoria);
+            _unitOfWork.Commit();
 
             return Ok(categoria);
         }
@@ -67,14 +70,14 @@ namespace APICatalogo.Controllers
         [HttpDelete("{id:int}")]
         public ActionResult Delete(int id)
         {
-            var categoria = _repository.Get(c => c.CategoriaId == id);
+            var categoria = _unitOfWork.CategoriaRepository.Get(c => c.CategoriaId == id);
             if (categoria is null)
             {
                 _logger.LogWarning("Dados inválidos");
                 return BadRequest("Dados inválidos");
             }
-            var categoriaExcluida = _repository.Get(c => c.CategoriaId == id);
-
+            var categoriaExcluida = _unitOfWork.CategoriaRepository.Get(c => c.CategoriaId == id);
+            _unitOfWork.Commit();
             return Ok(categoriaExcluida);
         }
     }
