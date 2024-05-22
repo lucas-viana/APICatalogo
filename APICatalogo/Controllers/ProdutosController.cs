@@ -1,5 +1,6 @@
 ﻿using APICatalogo.DTOs;
 using APICatalogo.Models;
+using APICatalogo.Pagination;
 using APICatalogo.Repository.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
@@ -28,6 +29,19 @@ namespace APICatalogo.Controllers
             {
                 return NotFound("Produtos não encontrados...");
             }
+            var produtosDto = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
+            return Ok(produtosDto);
+        }
+
+        [HttpGet("pagination")]
+        public ActionResult<IEnumerable<ProdutoDTO>> Get([FromQuery] ProdutosParameters produtosParameters)
+        {
+            var produtos = _unitOfWork.ProdutoRepository.GetProdutos(produtosParameters);
+            if (produtos is null)
+            {
+                return NotFound("A lista está vazia...");
+            }
+
             var produtosDto = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
             return Ok(produtosDto);
         }
@@ -92,7 +106,7 @@ namespace APICatalogo.Controllers
         }
 
         [HttpPatch("{id}/UpdatePartial")]
-        public ActionResult<ProdutoDTOUpdateResponse> Patch( int id, JsonPatchDocument<ProdutoDTOUpdateRequest> patchProdutoDto)
+        public ActionResult<ProdutoDTOUpdateResponse> Patch(int id, JsonPatchDocument<ProdutoDTOUpdateRequest> patchProdutoDto)
         {
             if (patchProdutoDto is null || id <= 0)
             {
@@ -109,8 +123,8 @@ namespace APICatalogo.Controllers
 
             patchProdutoDto.ApplyTo(produtoUpdateRequest, ModelState);
 
-            if(!ModelState.IsValid || !TryValidateModel(produtoUpdateRequest))
-            return BadRequest(ModelState);
+            if (!ModelState.IsValid || !TryValidateModel(produtoUpdateRequest))
+                return BadRequest(ModelState);
 
             _mapper.Map(produtoUpdateRequest, produto);
             _unitOfWork.ProdutoRepository.Update(produto);
