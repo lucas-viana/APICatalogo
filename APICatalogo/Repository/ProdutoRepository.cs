@@ -13,10 +13,11 @@ namespace APICatalogo.Repository
         {
         }
 
-        public IEnumerable<Produto> GetProdutos(ProdutosParameters produtosParameters)
+        public PagedList<Produto> GetProdutos(ProdutosParameters produtosParameters)
         {
-            var produtos = _context.Produtos.OrderBy(on => on.Nome).Skip((produtosParameters.PageNumber - 1) *produtosParameters.PageSize ).Take(produtosParameters.PageSize).ToList();
-            return produtos;
+            var produtos = _context.Produtos.OrderBy(p => p.ProdutoId).AsQueryable();
+            var produtosOrdenados = PagedList<Produto>.ToPagedList(produtos, produtosParameters.PageNumber, produtosParameters.PageSize);
+            return produtosOrdenados;
         }
 
         public IEnumerable<Produto> GetProdutosPorCategoria(int id)
