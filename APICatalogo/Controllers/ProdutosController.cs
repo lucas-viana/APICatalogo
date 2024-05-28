@@ -43,6 +43,11 @@ namespace APICatalogo.Controllers
                 return NotFound("A lista está vazia...");
             }
 
+            return ObterProduto(produtos);
+        }
+
+        private ActionResult<IEnumerable<ProdutoDTO>> ObterProduto(PagedList<Produto> produtos)
+        {
             var metadata = new
             {
                 produtos.TotalCount,
@@ -57,6 +62,19 @@ namespace APICatalogo.Controllers
 
             var produtosDto = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
             return Ok(produtosDto);
+        }
+
+        [HttpGet("filter/preco/pagination")]
+        public ActionResult<IEnumerable<ProdutoDTO>> GetProdutosFiltradosPorPreco([FromQuery5]ProdutosFiltroPreco produtosFiltroPreco)
+        {
+            var produtos = _unitOfWork.ProdutoRepository.GetProdutosFiltroPreco(produtosFiltroPreco);
+
+            if (produtos is null)
+            {
+                return NotFound("Nenhum produto encontrado");
+            }
+
+            return ObterProduto(produtos);
         }
 
         [HttpGet("categoria/{id}")]
