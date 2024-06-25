@@ -3,6 +3,6 @@
     public class ProdutosFiltroPreco : QueryStringParameters
     {
         public decimal? Preco { get; set; }
-        public Criterio Criterio {  get; set; }
+        public Criterio Criterio { get; set; }
     }
 }
